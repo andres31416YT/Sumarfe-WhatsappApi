@@ -26,7 +26,7 @@ app.post('/', async (req, res) => {
   
   try {
     // REEMPLAZA ESTA URL con la "Production URL" de tu nodo Webhook en n8n
-    const n8nUrl = 'https://andres31416.app.n8n.cloud/webhook/whatsappwebhook';
+    const n8nUrl = 'https://andres31416.app.n8n.cloud/webhook-test/whatsappwebhook';
     
     await axios.post(n8nUrl, req.body);
     console.log('Datos enviados a n8n correctamente');
