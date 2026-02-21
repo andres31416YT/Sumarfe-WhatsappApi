@@ -1,37 +1,42 @@
-// Import Express.js
 const express = require('express');
+const axios = require('axios');
 
-// Create an Express app
 const app = express();
 
-// Middleware to parse JSON bodies
 app.use(express.json());
 
-// Set port and verify_token
 const port = process.env.PORT || 3000;
-const verifyToken = process.env.VERIFY_TOKEN;
+const verifyToken = process.env.VERIFY_TOKEN || 'andres_token_secreto'; // Define esto en Render
 
-// Route for GET requests
+// 1. VALIDACIÓN PARA META (GET)
 app.get('/', (req, res) => {
   const { 'hub.mode': mode, 'hub.challenge': challenge, 'hub.verify_token': token } = req.query;
 
   if (mode === 'subscribe' && token === verifyToken) {
-    console.log('WEBHOOK VERIFIED');
+    console.log('WEBHOOK VERIFICADO POR META');
     res.status(200).send(challenge);
   } else {
     res.status(403).end();
   }
 });
 
-// Route for POST requests
-app.post('/', (req, res) => {
-  const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  console.log(`\n\nWebhook received ${timestamp}\n`);
-  console.log(JSON.stringify(req.body, null, 2));
-  res.status(200).end();
+// 2. REENVÍO A N8N (POST)
+app.post('/', async (req, res) => {
+  console.log(`Mensaje recibido de WhatsApp a las ${new Date().toLocaleString()}`);
+  
+  try {
+    // REEMPLAZA ESTA URL con la "Production URL" de tu nodo Webhook en n8n
+    const n8nUrl = 'https://andres31416.app.n8n.cloud/webhook/b9745505-d5c2-402d-a7d7-f6661da72f1f'; 
+    
+    await axios.post(n8nUrl, req.body);
+    console.log('Datos enviados a n8n correctamente');
+  } catch (error) {
+    console.error('Error al contactar n8n:', error.message);
+  }
+
+  res.status(200).send('EVENT_RECEIVED');
 });
 
-// Start the server
 app.listen(port, () => {
-  console.log(`\nListening on port ${port}\n`);
+  console.log(`Servidor puente escuchando en puerto ${port}`);
 });
